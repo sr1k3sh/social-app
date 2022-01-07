@@ -266,6 +266,7 @@ function Dashboard() {
             <img src="./logo192.png" alt="" width="30" height="30"/>
           </Link>
           <div className="rikesh-nav__actions">
+            <img className="rikesh-nav__img" width={32} src={imgUrl}></img>
             <div> welcome {name}</div>
             <button className="dashboard__btn btn btn-primary" onClick={logout}>
               Logout

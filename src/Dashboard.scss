@@ -5,6 +5,10 @@
     top:0;
   }
 
+  &__img{
+    border-radius: 50%;
+  }
+
   &__actions{
     display: flex;
     flex-direction: row;
@@ -208,4 +212,10 @@
     font-weight: bold;
   }
 
+}
+
+.dropdown .dropdown-toggle{
+  &::after{
+    display: none;
+  }
 }

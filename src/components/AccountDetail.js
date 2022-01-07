@@ -66,6 +66,7 @@ function AccountDetail() {
         e.preventDefault();
         const image = e.target.files[0]
         setImageAsFile(imageFile => (image))
+        setImageAsUrl({imgUrl:URL.createObjectURL(image)});
     }
 
     const handleSubmit = (e) =>{
@@ -116,11 +117,11 @@ function AccountDetail() {
                 </div>
                 <div className="account-section__form-element">
                     <label className="form-label">Email address</label>
-                    <input className="form-control" defaultValue={email}></input>
+                    <input disabled className="form-control" defaultValue={email}></input>
                 </div>
                 <div className="account-section__form-element">
                     <label className="form-label">Full name</label>
-                    <input className="form-control" defaultValue={fullname}></input>
+                    <input disabled className="form-control" defaultValue={fullname}></input>
                 </div>
                 <div className="account-section__form-element account-section__form-element--button">
                     <button type="submit" className="btn btn-outline-primary">Apply changes</button>
