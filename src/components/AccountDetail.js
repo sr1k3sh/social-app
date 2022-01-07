@@ -13,6 +13,9 @@ function AccountDetail() {
     const [imageAsFile, setImageAsFile] = useState('');
     const [imageAsUrl, setImageAsUrl] = useState({imgUrl: ''});
 
+    const [fullname, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+
     useEffect(() => {
         if (loading) return;
         if (!user) return history.replace("/");
@@ -24,6 +27,9 @@ function AccountDetail() {
                     snapshot.forEach(snap=>{
                         if(snap.val().uid === user.uid){
                             setImageAsUrl({imgUrl:snap.val().imgUrl});
+
+                            setFullName(snap.val().name);
+                            setEmail(snap.val().email);
                         }
                     });
                 });
@@ -65,26 +71,29 @@ function AccountDetail() {
     const handleSubmit = (e) =>{
         e.preventDefault();
         if(imageAsFile === '') {
-            console.error(`not an image, the image file is a ${typeof(imageAsFile)}`)
+            history.push('/');
+            return;
         }
-        const uploadTask = storage.ref(`/images/${imageAsFile.name}`).put(imageAsFile)
-          //initiates the firebase side uploading 
-        uploadTask.on('state_changed', (snapShot) => {
-            //takes a snap shot of the process as it is happening
-            console.log(snapShot)
-            }, (err) => {
-            //catches the errors
-                console.log(err)
-            }, () => {
-            // gets the functions from storage refences the image storage in firebase by the children
-            // gets the download url then sets the image from firebase as the value for the imgUrl key:
-            storage.ref('images').child(imageAsFile.name).getDownloadURL()
-             .then(fireBaseUrl => {
-                 console.log(fireBaseUrl)
-               setImageAsUrl(prevObject => ({...prevObject, imgUrl: fireBaseUrl}));
-               fetchUserData(fireBaseUrl);
+        else{
+            const uploadTask = storage.ref(`/images/${imageAsFile.name}`).put(imageAsFile)
+              //initiates the firebase side uploading 
+            uploadTask.on('state_changed', (snapShot) => {
+                //takes a snap shot of the process as it is happening
+                console.log(snapShot)
+                }, (err) => {
+                //catches the errors
+                    console.log(err)
+                }, () => {
+                // gets the functions from storage refences the image storage in firebase by the children
+                // gets the download url then sets the image from firebase as the value for the imgUrl key:
+                storage.ref('images').child(imageAsFile.name).getDownloadURL()
+                 .then(fireBaseUrl => {
+                   setImageAsUrl(prevObject => ({...prevObject, imgUrl: fireBaseUrl}));
+                   fetchUserData(fireBaseUrl);
+                   history.push('/')
+                });
             });
-        });
+        }
     }
  
     return (
@@ -97,21 +106,25 @@ function AccountDetail() {
             </div>
         </nav>
         <div className="col-xxl-12">
-            <form onSubmit={handleSubmit}>
+            <form className="account-section__form" onSubmit={handleSubmit}>
                 <div className="account-section__image-wrapper">
-                    <img className="account-section__image" src={imageAsUrl.imgUrl?imageAsUrl.imgUrl:dummy} alt="profile detail"></img>
-                    <label htmlFor="change-profile-pic">change profile pic</label>
+                    <div>
+                        <img className="account-section__image" src={imageAsUrl.imgUrl?imageAsUrl.imgUrl:dummy} alt="profile detail"></img>
+                    </div>
+                    <label className="account-section__label account-section__label--profile" htmlFor="change-profile-pic">change profile pic</label>
                     <input className="account-section__hidden" id="change-profile-pic" type="file" onChange={onFileupload}></input>
                 </div>
-                {/* <div>
+                <div className="account-section__form-element">
                     <label className="form-label">Email address</label>
-                    <input className="form-control"></input>
+                    <input className="form-control" defaultValue={email}></input>
                 </div>
-                <div>
+                <div className="account-section__form-element">
                     <label className="form-label">Full name</label>
-                    <input className="form-control"></input>
-                </div> */}
-                <button type="submit" className="btn btn-primary">submit</button>
+                    <input className="form-control" defaultValue={fullname}></input>
+                </div>
+                <div className="account-section__form-element account-section__form-element--button">
+                    <button type="submit" className="btn btn-outline-primary">Apply changes</button>
+                </div>
             </form>
         </div>
         </div>

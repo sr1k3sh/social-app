@@ -1,4 +1,10 @@
 .rikesh-nav{
+
+  & .navbar{
+    position: sticky;
+    top:0;
+  }
+
   &__actions{
     display: flex;
     flex-direction: row;
@@ -16,8 +22,25 @@
 }
 
 .post-section{
-  display: flex;
-  flex-direction: column;
+  margin-top: 32px;
+  &__wrapper{
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__image-label{
+    width: 300px;
+    position: absolute;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    & svg{
+      width: 150px;
+    }
+  }
+
+
   &__form{
     display: flex;
     flex-direction: column;
@@ -50,6 +73,12 @@
   &__form-element{
     display: flex;
     flex-direction: column;
+    border: 1px solid #efefef;
+    border-radius: 4px;
+    &--image-upload{
+      width: fit-content;
+      margin-bottom: 10px;
+    }
   }
   
   &__story-list{
