@@ -1,0 +1,164 @@
+.rikesh-nav{
+  &__actions{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap:8px;
+  }
+
+  &__settings{
+    width: 24px;
+    padding: 0;
+    & svg{
+      width: 100%;
+    }
+  }
+}
+
+.post-section{
+  display: flex;
+  flex-direction: column;
+  &__form{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 32px;
+  }
+
+  &__avatar{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  &__avatar-img{
+    width: 40px;
+    height:40px;
+    border-radius: 50%;
+    background: var(--bs-primary);
+  }
+
+  &__hidden{
+    display: none;
+  }
+
+  &__button{
+    width: fit-content;
+    margin-top: 10px;
+  }
+
+  &__form-element{
+    display: flex;
+    flex-direction: column;
+  }
+  
+  &__story-list{
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__story-item{
+    border: 1px solid #e3e3e3;
+    padding: 8px;
+    border-radius: 4px;
+    &:not(:last-child){
+      margin-bottom: 8px;
+    }
+  }
+
+  &__actions{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  &__action-buttons{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  &__like{
+    display: flex;
+    width: 16px;
+    height: 16px;
+    background: transparent;
+    border: 0px;
+    padding: 0px;
+    & svg{
+      width: 100%;
+      height: 100%;
+    }
+    &.active{
+      svg{
+        fill:var(--bs-primary);
+        stroke: transparent;
+      }
+    }
+  }
+  &__liked-container{
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    &span{
+      font-size: 10px;
+    }
+  }
+
+  &__comment-form-wrapper{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__comment-form{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  &__comment-button{
+    width: fit-content;
+    margin-top: 10px;
+  }
+
+  &__comment-list{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__comment-item{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    & img{
+      background: red;
+      border-radius: 50%;
+    }
+    & span{
+      padding: 8px 12px;
+      background: #eff2f5;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+  }
+
+  &__comment{
+    font-size: 14px;
+    color: #afafaf;
+  }
+
+  &__story-user{
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+}
