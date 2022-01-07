@@ -105,7 +105,7 @@ function AccountDetail() {
             </Link>
             </div>
         </nav>
-        <div className="col-xxl-12">
+        <div className="col-xxl-12 account-section">
             <form className="account-section__form" onSubmit={handleSubmit}>
                 <div className="account-section__image-wrapper">
                     <div>
