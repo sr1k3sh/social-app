@@ -23,7 +23,6 @@ function Dashboard() {
   const [localImg, setLocalImg] = useState("");
 
   const [imageAsFile, setImageAsFile] = useState('');
-  const [imageAsUrl, setImageAsUrl] = useState({imgUrl: ''});
 
 
   useEffect(() => {
@@ -124,7 +123,6 @@ function Dashboard() {
               // gets the download url then sets the image from firebase as the value for the imgUrl key:
               storage.ref('images').child(imageAsFile.name).getDownloadURL()
               .then(fireBaseUrl => {
-                setImageAsUrl(prevObject => ({...prevObject, imgUrl: fireBaseUrl}));
                 database.ref("feeds").push({
                   story:story,
                   userId:user.uid,
@@ -270,7 +268,7 @@ function Dashboard() {
                 <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>cloud, upload, storage, memory, data</title><path d="M20.57,9.43A8,8,0,0,0,5.26,10,5,5,0,1,0,5,20h5V18H5a3,3,0,0,1,0-6,3.1,3.1,0,0,1,.79.12l1.12.31.14-1.15a6,6,0,0,1,11.74-.82l.15.54.54.16A3.46,3.46,0,0,1,22,14.5,3.5,3.5,0,0,1,18.5,18H16v2h2.5A5.48,5.48,0,0,0,20.57,9.43Z"/><polygon points="16.71 15.29 13 11.59 9.29 15.29 10.71 16.71 12 15.41 12 20 14 20 14 15.41 15.29 16.71 16.71 15.29"/></svg>
               </label>
               <input id="post_media" type="file" className="form-control post-section__hidden"  onChange={handleMediaChange}/>
-              <img width={300} src={localImg?localImg:dummy} alt="local image"></img>
+              <img width={300} src={localImg?localImg:dummy} alt="local data"></img>
             </div>
             <div className="post-section__form-element">
               <label htmlFor="post_area" className="post-section__hidden">Post your story</label>
@@ -288,7 +286,7 @@ function Dashboard() {
                   </div>
                   <div>
                     {
-                      d.postImageUrl && <img width={375} className="post-section__story-image" src={d.postImageUrl?d.postImageUrl:dummy}></img>
+                      d.postImageUrl && <img width={375} className="post-section__story-image" src={d.postImageUrl?d.postImageUrl:dummy} alt="post data"></img>
                     }
                     <p>{d.story}</p>
 
