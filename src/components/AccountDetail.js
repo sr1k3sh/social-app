@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
-import { auth ,database, storage} from "./../firebase";
+import { auth ,database, storage} from "../services/firebase";
 import dummy from './../images/profile.png'
 import './AccountDetail.scss';
 

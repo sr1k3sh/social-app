@@ -3,9 +3,9 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 import "./Dashboard.scss";
-import { auth, logout ,database, storage} from "./firebase";
+import { auth, logout ,database, storage} from "../services/firebase";
 import uniqid from 'uniqid';
-import dummy from './images/profile.png'
+import dummy from './../images/profile.png'
 
 function Dashboard() {
   const [user, loading] = useAuthState(auth);
@@ -263,10 +263,10 @@ function Dashboard() {
       <nav className="navbar navbar-light bg-light">
         <div className="container">
           <Link className="navbar-brand" to="/dashboard">
-            <img src="./logo192.png" alt="" width="30" height="30"/>
+            <img src="./logo192.png" alt="test" width="30" height="30"/>
           </Link>
           <div className="rikesh-nav__actions">
-            <img className="rikesh-nav__img" width={32} src={imgUrl}></img>
+            <img className="rikesh-nav__img" width={32} src={imgUrl} alt="nav data"></img>
             <div> welcome {name}</div>
             <button className="dashboard__btn btn btn-primary" onClick={logout}>
               Logout
