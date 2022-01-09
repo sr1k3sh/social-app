@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
+import { useRef } from "react/cjs/react.development";
 import { auth , storage ,db} from "../services/firebase";
 import dummy from './../images/profile.png'
 import './AccountDetail.scss';
@@ -16,9 +17,13 @@ function AccountDetail() {
     const [fullname, setFullName] = useState('');
     const [email, setEmail] = useState('');
 
+    const isMounted = useRef(false);
+
     useEffect(() => {
         if (loading) return;
         if (!user) return history.replace("/");
+
+        isMounted.current = true;
 
         const fetchProfile = async()=>{
             try{
@@ -37,24 +42,30 @@ function AccountDetail() {
             }
         }
 
-        fetchProfile();
+        if(isMounted.current){
+            fetchProfile();
+        }
+
+        return () => isMounted.current = false;
 
     }, [user, loading, history]);
 
     const fetchUserData = async(url) => {
-        try{
-            const usersRef = db.collection('users').doc(user.uid);
-            usersRef.get()
-            .then((docSnapshot) => {
-                if (docSnapshot.exists) {
-                    usersRef.update({
-                        imgUrl:url
-                    });
-                }
-            });
-        }
-        catch(err){
-            console.log(err);
+        if(isMounted.current){
+            try{
+                const usersRef = db.collection('users').doc(user.uid);
+                usersRef.get()
+                .then((docSnapshot) => {
+                    if (docSnapshot.exists) {
+                        usersRef.update({
+                            imgUrl:url
+                        });
+                    }
+                });
+            }
+            catch(err){
+                console.log(err);
+            }
         }
 
     }
@@ -62,35 +73,39 @@ function AccountDetail() {
     const onFileupload = (e) =>{
         e.preventDefault();
         const image = e.target.files[0]
-        setImageAsFile(imageFile => (image))
-        setImageAsUrl({imgUrl:URL.createObjectURL(image)});
+        if(isMounted.current){
+            setImageAsFile(imageFile => (image))
+            setImageAsUrl({imgUrl:URL.createObjectURL(image)});
+        }
     }
 
     const handleSubmit = (e) =>{
         e.preventDefault();
-        if(imageAsFile === '') {
-            history.push('/');
-            return;
-        }
-        else{
-            const uploadTask = storage.ref(`/images/${imageAsFile.name}`).put(imageAsFile)
-              //initiates the firebase side uploading 
-            uploadTask.on('state_changed', (snapShot) => {
-                //takes a snap shot of the process as it is happening
-                console.log(snapShot)
-                }, (err) => {
-                //catches the errors
-                    console.log(err)
-                }, () => {
-                // gets the functions from storage refences the image storage in firebase by the children
-                // gets the download url then sets the image from firebase as the value for the imgUrl key:
-                storage.ref('images').child(imageAsFile.name).getDownloadURL()
-                 .then(fireBaseUrl => {
-                   setImageAsUrl(prevObject => ({...prevObject, imgUrl: fireBaseUrl}));
-                   fetchUserData(fireBaseUrl);
-                   history.push('/')
+        if(isMounted.current){
+            if(imageAsFile === '') {
+                history.push('/');
+                return;
+            }
+            else{
+                const uploadTask = storage.ref(`/images/${imageAsFile.name}`).put(imageAsFile)
+                  //initiates the firebase side uploading 
+                uploadTask.on('state_changed', (snapShot) => {
+                    //takes a snap shot of the process as it is happening
+                    console.log(snapShot)
+                    }, (err) => {
+                    //catches the errors
+                        console.log(err)
+                    }, () => {
+                    // gets the functions from storage refences the image storage in firebase by the children
+                    // gets the download url then sets the image from firebase as the value for the imgUrl key:
+                    storage.ref('images').child(imageAsFile.name).getDownloadURL()
+                     .then(fireBaseUrl => {
+                       setImageAsUrl(prevObject => ({...prevObject, imgUrl: fireBaseUrl}));
+                       fetchUserData(fireBaseUrl);
+                       history.push('/')
+                    });
                 });
-            });
+            }
         }
     }
  

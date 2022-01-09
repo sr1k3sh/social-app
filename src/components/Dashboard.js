@@ -13,6 +13,8 @@ function Dashboard() {
   const [story , setStory] = useState();
   const [imgUrl, setImgUrl] = useState(dummy);
 
+  const isMounted = useRef(false)
+
   const history = useHistory();
   const [postData, setPostData] = useState([]);
 
@@ -39,6 +41,8 @@ function Dashboard() {
   useEffect(() => {
     if (loading) return;
     if (!user) return history.replace("/");
+
+    isMounted.current = true;
 
     const fetchUserName = async (id) => {
       try {
@@ -92,25 +96,30 @@ function Dashboard() {
       }
     }
 
-    fetchProfile();
+    if(isMounted.current){
+      
+      fetchProfile();
+  
+      fetchUserName(user.id);
+  
+      fetchComments();
+  
+      post();
+  
+      db.collection('activity').onSnapshot(snap=>{
+        setActivity(snap.docs.map(s=>s.data()))
+      });
+  
+      setDidMount(true);
+    }
 
-    fetchUserName(user.id);
-
-    fetchComments();
-
-    post();
-
-    db.collection('activity').onSnapshot(snap=>{
-      setActivity(snap.docs.map(s=>s.data()))
-    });
-
-    setDidMount(true);
     return () => {
       setName({}); // This worked for me
       setPostData([]);
       setStory({});
       setTextarea("");
       setDidMount(false);
+      isMounted.current = false;
     };
     
   }, [user, loading, history]);
@@ -121,84 +130,87 @@ function Dashboard() {
 
   const PostSection = async(e) =>{
     e.preventDefault();
-    let id = uniqid()
-    try{
-      e.preventDefault();
-      if(imageAsFile === '') {
-        await db.collection("feeds").doc("story-id-"+id).set({
-          story:story,
-          userId:user.uid,
-          username:name,
-          storyId: "story-id-"+id,
-          likedArr:"",
-          likedByCurrent:'',
-          imgUrl:imgUrl?imgUrl:'',
-          comments:[]
-        })
+    let id = uniqid();
+
+    if(isMounted.current){
+      try{
+        e.preventDefault();
+        if(imageAsFile === '') {
+          await db.collection("feeds").doc("story-id-"+id).set({
+            story:story,
+            userId:user.uid,
+            username:name,
+            storyId: "story-id-"+id,
+            likedArr:"",
+            likedByCurrent:'',
+            imgUrl:imgUrl?imgUrl:'',
+            comments:[]
+          })
+        }
+        else{
+            const uploadTask = storage.ref(`/images/${imageAsFile.name}`).put(imageAsFile)
+              //initiates the firebase side uploading 
+            uploadTask.on('state_changed', (snapShot) => {
+                //takes a snap shot of the process as it is happening
+                console.log(snapShot)
+                }, (err) => {
+                //catches the errors
+                    console.log(err)
+                }, () => {
+                // gets the functions from storage refences the image storage in firebase by the children
+                // gets the download url then sets the image from firebase as the value for the imgUrl key:
+                storage.ref('images').child(imageAsFile.name).getDownloadURL()
+                .then(fireBaseUrl => {
+                  db.collection("feeds").doc("story-id-"+id).set({
+                    story:story,
+                    userId:user.uid,
+                    username:name,
+                    storyId: "story-id-"+id,
+                    likedArr:"",
+                    likedByCurrent:'',
+                    imgUrl:imgUrl?imgUrl:'',
+                    comments:[],
+                    postImageUrl:fireBaseUrl
+                  })
+                });
+            });
+        }
+        
+        e.target.reset();
       }
-      else{
-          const uploadTask = storage.ref(`/images/${imageAsFile.name}`).put(imageAsFile)
-            //initiates the firebase side uploading 
-          uploadTask.on('state_changed', (snapShot) => {
-              //takes a snap shot of the process as it is happening
-              console.log(snapShot)
-              }, (err) => {
-              //catches the errors
-                  console.log(err)
-              }, () => {
-              // gets the functions from storage refences the image storage in firebase by the children
-              // gets the download url then sets the image from firebase as the value for the imgUrl key:
-              storage.ref('images').child(imageAsFile.name).getDownloadURL()
-              .then(fireBaseUrl => {
-                db.collection("feeds").doc("story-id-"+id).set({
-                  story:story,
-                  userId:user.uid,
-                  username:name,
-                  storyId: "story-id-"+id,
-                  likedArr:"",
-                  likedByCurrent:'',
-                  imgUrl:imgUrl?imgUrl:'',
-                  comments:[],
-                  postImageUrl:fireBaseUrl
-                })
-              });
-          });
+      catch(err){
+        console.log(err);
       }
-      
-      e.target.reset();
-    }
-    catch(err){
-      console.log(err);
     }
   }
 
-  const append = (e) => {
-    e.preventDefault();
-  };
-
   const onChange = (e) =>{
-    setTextarea(e.target.value);
+    if(isMounted.current){
+      setTextarea(e.target.value);
+    }
   }
 
   const shareComment = async(e) =>{
     e.preventDefault();
 
-    try{
-      let dom = e.target;
-
-      let storyName = dom.getAttribute('name');
-
-      const comments = await db.collection('comments').doc('comment-'+uniqid());
-      comments.set({
-        textarea:textarea,
-        username:name,
-        userId:user.uid,
-        storyId:storyName,
-        imgUrl:imgUrl?imgUrl:dummy
-      });
-    }
-    catch(err){
-      console.log(err)
+    if(isMounted.current){
+      try{
+        let dom = e.target;
+  
+        let storyName = dom.getAttribute('name');
+  
+        const comments = await db.collection('comments').doc('comment-'+uniqid());
+        comments.set({
+          textarea:textarea,
+          username:name,
+          userId:user.uid,
+          storyId:storyName,
+          imgUrl:imgUrl?imgUrl:dummy
+        });
+      }
+      catch(err){
+        console.log(err)
+      }
     }
 
     e.target.reset();
@@ -206,71 +218,79 @@ function Dashboard() {
 
   const likeChange = async(e) =>{
     e.preventDefault();
-    try{
 
-      let dom = e.target.closest(".post-section__like");
-      let storyName = dom.getAttribute('name');
-      if(dom.classList.contains("active")){
-        dom.classList.remove('active')
-      }
-      else{
-        dom.classList.add('active');
-      }
-
-      const feeds =  await db.collection('feeds').doc(storyName);
-      feeds.get()
-      .then((docSnapshot) => {
-        if (docSnapshot.exists) {
-          let arr = [].concat(docSnapshot.data().likedArr,user.uid);
-          arr = new Set(arr);
-          arr = Array.from(new Set(arr)).filter(Boolean)
-          feeds.update({
-            likedArr:arr,
-            likedByCurrent:user.uid
-          });
-          const activity = db.collection("activity").doc('activity-'+uniqid());
-          let obj = {
-            userId: user.uid,
-            likedOn: storyName,
-            username: name,
-            message: `${name} has liked your story`
-          }
-
-          activity.set(obj);
+    if(isMounted.current){
+      try{
+        let dom = e.target.closest(".post-section__like");
+        let storyName = dom.getAttribute('name');
+        if(dom.classList.contains("active")){
+          dom.classList.remove('active')
         }
-      });
-
-      
-
-      
-    }
-    catch(err){
-      console.log(err)
+        else{
+          dom.classList.add('active');
+        }
+  
+        const feeds =  await db.collection('feeds').doc(storyName);
+        feeds.get()
+        .then((docSnapshot) => {
+          if (docSnapshot.exists) {
+            let arr = [].concat(docSnapshot.data().likedArr,user.uid);
+            arr = new Set(arr);
+            arr = Array.from(new Set(arr)).filter(Boolean)
+            feeds.update({
+              likedArr:arr,
+              likedByCurrent:user.uid
+            });
+            const activity = db.collection("activity").doc('activity-'+uniqid());
+            let obj = {
+              userId: user.uid,
+              likedOn: storyName,
+              username: name,
+              message: `${name} has liked your story`
+            }
+  
+            activity.set(obj);
+          }
+        });
+  
+        
+  
+        
+      }
+      catch(err){
+        console.log(err)
+      }
     }
   }
 
   const handleMediaChange = (e) =>{
     e.preventDefault();
     const file = e.target.files[0];
-    if (file) {
-      setImageAsFile(file);
-      setLocalImg(URL.createObjectURL(file));
-      imageRef?.current.classList.add('added')
+    if(isMounted.current){
+      if (file) {
+        setImageAsFile(file);
+        setLocalImg(URL.createObjectURL(file));
+        imageRef?.current.classList.add('added')
+      }
     }
   }
 
   const onSharePost = (e) =>{
     e.preventDefault();
-    setSharePost(false);
-    e.target.classList.add('active');
-    document.querySelector(".btn-photo").classList.remove('active');
+    if(isMounted.current){
+      setSharePost(false);
+      e.target.classList.add('active');
+      document.querySelector(".btn-photo").classList.remove('active');
+    }
   }
 
   const onSharePhoto = (e) =>{
     e.preventDefault();
-    setSharePost(true);
-    e.target.classList.add('active');
-    document.querySelector(".btn-post").classList.remove('active');
+    if(isMounted.current){
+      setSharePost(true);
+      e.target.classList.add('active');
+      document.querySelector(".btn-post").classList.remove('active');
+    }
   }
 
   return (
@@ -368,7 +388,7 @@ function Dashboard() {
                         </button>
                         <span>{d.likedArr && d.likedArr.length}</span>
                       </div>
-                      <button className="post-section__comment btn" onClick={append}>
+                      <button className="post-section__comment btn">
                         comments
                       </button>
                     </div>
