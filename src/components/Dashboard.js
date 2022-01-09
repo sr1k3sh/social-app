@@ -3,7 +3,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 import "./Dashboard.scss";
-import { auth, logout ,database, storage} from "../services/firebase";
+import { auth, logout, storage, db} from "../services/firebase";
 import uniqid from 'uniqid';
 import dummy from './../images/profile.png'
 
@@ -11,7 +11,7 @@ function Dashboard() {
   const [user, loading] = useAuthState(auth);
   const [name, setName] = useState("");
   const [story , setStory] = useState();
-  const [imgUrl, setImgUrl] = useState();
+  const [imgUrl, setImgUrl] = useState(dummy);
 
   const history = useHistory();
   const [postData, setPostData] = useState([]);
@@ -30,24 +30,25 @@ function Dashboard() {
 
   const {imageRef} = useRef(null);
 
+  const [getActivity, setActivity] = useState([]);
 
+  const [getComment, setComment] = useState([]);
+
+  const [getProfileData, setProfileData] = useState([]);
+ 
   useEffect(() => {
     if (loading) return;
     if (!user) return history.replace("/");
 
     const fetchUserName = async (id) => {
       try {
-        const test = await database.ref("users");
-        test
-        .orderByChild('uid')
-        .equalTo(user.uid).once("value")
-        .then(snap=>{
-          if(snap.exists()){
-            snap.forEach(function(user){
-              setName(user.val().name);
-              setImgUrl(user.val().imgUrl);
-            })
-          }
+        const usersRef = await db.collection('users').doc(user.uid);
+        usersRef.get()
+          .then((docSnapshot) => {
+            if (docSnapshot.exists) {
+              setName(docSnapshot.data().name);
+              setImgUrl(docSnapshot.data().imgUrl?docSnapshot.data().imgUrl:dummy);
+            } 
         });
         
       } catch (err) {
@@ -58,23 +59,32 @@ function Dashboard() {
   
     const post = async () =>{
       try{
-        const getData = await database.ref('feeds');
-        
-        getData.on("value",function(snapshot){
-          snapshot.forEach(function(data){
-            let userData = {
-              name:data.val().username,
-              story:data.val().story,
-              uid:data.val().userId,
-              storyId:data.val().storyId,
-              likedByCurrent: data.val().likedByCurrent,
-              likedArr:data.val().likedArr,
-              comments:data.val().comments,
-              imgUrl:data.val().imgUrl,
-              postImageUrl:data.val().postImageUrl
-            }
-            setPostData(prev=>[...prev,userData]);         
-          });
+        await db.collection("feeds").onSnapshot(d=>{
+          setPostData(d.docs.map(m=>m.data()));
+        });
+
+      }
+      catch(err){
+        console.log(err);
+      }
+    }
+
+    const fetchProfile = async () =>{
+      try{
+        await db.collection("users").onSnapshot(snap=>{
+          setProfileData(snap.docs.map(m=>m.data()));
+        })
+      }
+      catch(err){
+        console.log(err);
+      }
+    }
+
+    const fetchComments = async() =>{
+      try{
+        let comments = await db.collection('comments');
+        comments.onSnapshot(c=>{
+          setComment(c.docs.map(d=>d.data()))
         });
       }
       catch(err){
@@ -82,14 +92,22 @@ function Dashboard() {
       }
     }
 
+    fetchProfile();
+
     fetchUserName(user.id);
 
+    fetchComments();
+
     post();
+
+    db.collection('activity').onSnapshot(snap=>{
+      setActivity(snap.docs.map(s=>s.data()))
+    });
 
     setDidMount(true);
     return () => {
       setName({}); // This worked for me
-      setPostData({});
+      setPostData([]);
       setStory({});
       setTextarea("");
       setDidMount(false);
@@ -103,18 +121,20 @@ function Dashboard() {
 
   const PostSection = async(e) =>{
     e.preventDefault();
+    let id = uniqid()
     try{
       e.preventDefault();
       if(imageAsFile === '') {
-        await database.ref("feeds").push({
+        await db.collection("feeds").doc("story-id-"+id).set({
           story:story,
           userId:user.uid,
           username:name,
-          storyId: "story-id-"+uniqid(),
+          storyId: "story-id-"+id,
           likedArr:"",
-          likedByCurrent:false,
-          imgUrl:imgUrl?imgUrl:'',   
-        });
+          likedByCurrent:'',
+          imgUrl:imgUrl?imgUrl:'',
+          comments:[]
+        })
       }
       else{
           const uploadTask = storage.ref(`/images/${imageAsFile.name}`).put(imageAsFile)
@@ -130,16 +150,17 @@ function Dashboard() {
               // gets the download url then sets the image from firebase as the value for the imgUrl key:
               storage.ref('images').child(imageAsFile.name).getDownloadURL()
               .then(fireBaseUrl => {
-                database.ref("feeds").push({
+                db.collection("feeds").doc("story-id-"+id).set({
                   story:story,
                   userId:user.uid,
                   username:name,
-                  storyId: "story-id-"+uniqid(),
+                  storyId: "story-id-"+id,
                   likedArr:"",
-                  likedByCurrent:false,
+                  likedByCurrent:'',
                   imgUrl:imgUrl?imgUrl:'',
+                  comments:[],
                   postImageUrl:fireBaseUrl
-                });
+                })
               });
           });
       }
@@ -163,30 +184,18 @@ function Dashboard() {
     e.preventDefault();
 
     try{
-      let data = await database.ref("feeds");
       let dom = e.target;
 
-      let name = dom.getAttribute('name');
-      data.orderByChild('storyId').equalTo(name).once('value').then(d=>{
-        d.forEach(e=>{
-          if(name === e.val().storyId){ 
-            let obj = {
-              username:e.val().username,
-              userId:e.val().userId,
-              textarea:textarea,
-              imgUrl:imgUrl?imgUrl:""
-            }
-            let arr = [].concat(e.val().comments,obj);
-            arr = new Set(arr);
-            arr = Array.from(new Set(arr)).filter(Boolean);
+      let storyName = dom.getAttribute('name');
 
-            database.ref('feeds/'+e.getRef().getKey()).update({
-              comments: arr,
-            });  
-          }
-        });
+      const comments = await db.collection('comments').doc('comment-'+uniqid());
+      comments.set({
+        textarea:textarea,
+        username:name,
+        userId:user.uid,
+        storyId:storyName,
+        imgUrl:imgUrl?imgUrl:dummy
       });
-      
     }
     catch(err){
       console.log(err)
@@ -195,38 +204,44 @@ function Dashboard() {
     e.target.reset();
   }
 
-  const likeChange = async(e,elem) =>{
+  const likeChange = async(e) =>{
     e.preventDefault();
     try{
-      let data = await database.ref("feeds");
+
       let dom = e.target.closest(".post-section__like");
-      let name = dom.getAttribute('name');
-      let states = false;
+      let storyName = dom.getAttribute('name');
       if(dom.classList.contains("active")){
         dom.classList.remove('active')
-        states = false;
       }
       else{
         dom.classList.add('active');
-        states = true;
       }
-      data.orderByChild('storyId').equalTo(name).once('value').then(d=>{
-        d.forEach(e=>{
-          if(name === e.val().storyId){ 
-            let arr = [].concat(e.val().likedArr,user.uid);
-            arr = new Set(arr);
-            arr = Array.from(new Set(arr)).filter(Boolean)
-            database.ref('feeds/'+e.getRef().getKey()).update({
-              likedArr: states ? arr : arr.filter(d=>d!==user.uid)
-            });
-            if(user.uid === e.val().userId){
-              database.ref('feeds/'+e.getRef().getKey()).update({
-                likedByCurrent: states
-              });
-            }   
+
+      const feeds =  await db.collection('feeds').doc(storyName);
+      feeds.get()
+      .then((docSnapshot) => {
+        if (docSnapshot.exists) {
+          let arr = [].concat(docSnapshot.data().likedArr,user.uid);
+          arr = new Set(arr);
+          arr = Array.from(new Set(arr)).filter(Boolean)
+          feeds.update({
+            likedArr:arr,
+            likedByCurrent:user.uid
+          });
+          const activity = db.collection("activity").doc('activity-'+uniqid());
+          let obj = {
+            userId: user.uid,
+            likedOn: storyName,
+            username: name,
+            message: `${name} has liked your story`
           }
-        });
+
+          activity.set(obj);
+        }
       });
+
+      
+
       
     }
     catch(err){
@@ -258,6 +273,8 @@ function Dashboard() {
     document.querySelector(".btn-post").classList.remove('active');
   }
 
+  console.log(getActivity)
+
   return (
     <div className="rikesh-nav container-xxl">
       <nav className="navbar navbar-light bg-light">
@@ -266,7 +283,25 @@ function Dashboard() {
             <img src="./logo192.png" alt="test" width="30" height="30"/>
           </Link>
           <div className="rikesh-nav__actions">
-            <img className="rikesh-nav__img" width={32} src={imgUrl} alt="nav data"></img>
+            <div className="dropdown">
+              <button className="btn rikesh-nav__notification-wrapper dropdown-toogle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                  <svg version="1.1" id="Icons" x="0px" y="0px"
+                    viewBox="0 0 32 32">
+                  <path className="st1" d="M26,21.5L25,20c-1.6-2.4-2.4-5.3-2.4-8.2c0-3.1-2-5.7-4.7-6.5C17.6,4.5,16.8,4,16,4s-1.6,0.5-1.9,1.3
+                    c-2.7,0.8-4.7,3.4-4.7,6.5c0,2.9-0.8,5.8-2.4,8.2l-1,1.5c-0.4,0.7,0,1.5,0.8,1.5h18.3C25.9,23,26.4,22.1,26,21.5z"/>
+                  <path className="st1" d="M19,26c0,1.7-1.3,3-3,3s-3-1.3-3-3"/>
+                  </svg>
+              </button>
+              <ul className="dropdown-menu dropdown-menu-start dropdown-menu-lg-start dropdown-menu-sm-start" aria-labelledby="dropdownMenuButton2">
+                {
+                  getActivity && getActivity.filter(f=>f.userId !== user.uid).map((g,i)=>{
+                    console.log(g);
+                    return <li key={i}><Link className="link-secondary" to="/">{g.message}</Link></li>
+                  })
+                }
+              </ul>
+            </div>
+            <img className="rikesh-nav__img" width={32} height={32} src={imgUrl} alt="nav data"></img>
             <div> welcome {name}</div>
             <button className="dashboard__btn btn btn-primary" onClick={logout}>
               Logout
@@ -308,10 +343,17 @@ function Dashboard() {
           </form>
 
           <ul className="post-section__story-list">{     
-            postData.length && postData.filter((v,i,a)=>a.findIndex(t=>(t.storyId===v.storyId))===i).map((d,i)=>{
+            postData && postData.map((d,i)=>{
               return <li key={i} className="post-section__story-item" id={d.storyId}>
                   <div className="post-section__avatar">
-                    <img className="post-section__avatar-img" src={d.imgUrl?d.imgUrl:dummy} alt="avatar"></img>
+                    {
+                      getProfileData && getProfileData.map((p,i)=>{
+                        if(p.uid === d.userId){
+                          return <img className="post-section__avatar-img" key={i} src={p.imgUrl?p.imgUrl:dummy} alt="avatar"></img>
+                        }
+                        return false;
+                      })
+                    }
                     <Link to="#" className="post-section__story-user link-secondary">{d.name}</Link>
                   </div>
                   <div>
@@ -324,7 +366,7 @@ function Dashboard() {
                   <div className="post-section__actions">
                     <div className="post-section__action-buttons">
                       <div className="post-section__liked-container">
-                        <button className={ d.likedByCurrent ? "post-section__like active":"post-section__like"} name={d.storyId} onClick={e=>likeChange(e,this)}>
+                        <button className={ user && d.likedByCurrent === user.uid ? "post-section__like active":"post-section__like"} name={d.storyId} onClick={e=>likeChange(e,this)}>
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-thumbs-up"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
                         </button>
                         <span>{d.likedArr && d.likedArr.length}</span>
@@ -336,11 +378,22 @@ function Dashboard() {
                     <div className="post-section__comment-form-wrapper">
                       <ul className="post-section__comment-list">
                         {
-                          d.comments && d.comments.map((c,i)=>{
-                            return <li className="post-section__comment-item" key={i}>
-                              <img width="24" src={c.imgUrl?c.imgUrl:dummy} alt="profile data"></img>
-                              <span>{c.textarea}</span>
-                            </li>
+                          getComment && getComment.map((c,i)=>{
+                            if(c.storyId === d.storyId){
+                              return <li className="post-section__comment-item" key={i}>
+                                {
+                                  getProfileData && getProfileData.map((p,i)=>{
+                                    if(p.uid === c.userId){
+                                      return <img key={i} width="24" height="24" src={p.imgUrl?p.imgUrl:dummy} alt="profile data"></img>
+                                    }
+                                    return false;
+                                  })
+
+                                }
+                                <span>{c.textarea}</span>
+                              </li>
+                            }
+                            return false;
                           })
                         }
                       </ul>

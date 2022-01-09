@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
-import { auth ,database, storage} from "../services/firebase";
+import { auth , storage ,db} from "../services/firebase";
 import dummy from './../images/profile.png'
 import './AccountDetail.scss';
 
@@ -22,16 +22,14 @@ function AccountDetail() {
 
         const fetchProfile = async()=>{
             try{
-                const db = await database.ref("users");
-                db.on('value',function(snapshot){
-                    snapshot.forEach(snap=>{
-                        if(snap.val().uid === user.uid){
-                            setImageAsUrl({imgUrl:snap.val().imgUrl});
-
-                            setFullName(snap.val().name);
-                            setEmail(snap.val().email);
-                        }
-                    });
+                const usersRef = db.collection('users').doc(user.uid);
+                usersRef.get()
+                .then((docSnapshot) => {
+                    if (docSnapshot.exists) {
+                        setImageAsUrl({imgUrl:docSnapshot.data().imgUrl});
+                        setFullName(docSnapshot.data().name);
+                        setEmail(docSnapshot.data().email);
+                    }
                 });
             }
             catch(err){
@@ -45,15 +43,14 @@ function AccountDetail() {
 
     const fetchUserData = async(url) => {
         try{
-            const db = await database.ref("users");
-            db.on('value',function(snapshot){
-                snapshot.forEach(snap=>{
-                    if(snap.val().uid === user.uid){
-                        database.ref('users/'+snap.getRef().getKey()).update({
-                            imgUrl:url
-                        });
-                    }
-                });
+            const usersRef = db.collection('users').doc(user.uid);
+            usersRef.get()
+            .then((docSnapshot) => {
+                if (docSnapshot.exists) {
+                    usersRef.update({
+                        imgUrl:url
+                    });
+                }
             });
         }
         catch(err){
