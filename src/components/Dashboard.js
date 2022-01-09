@@ -292,7 +292,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="rikesh-nav container-xxl">
+    <div className="rikesh-container container-xxl">
       <Navbar isRequired={true} imgUrl={imgUrl} name={name}></Navbar>
       
       <div className="col-xxl-12 post-section">
@@ -327,8 +327,8 @@ function Dashboard() {
                       getProfileData && getProfileData.map((p,i)=>{
                         if(p.uid === d.userId){
                           return [ 
-                            <img className="post-section__avatar-img" key={i} src={p.imgUrl?p.imgUrl:dummy} alt="avatar"></img>,
-                            <Link to="#" className="post-section__story-user link-secondary">{p.name}</Link>
+                            <img className="post-section__avatar-img" key={"img"+i} src={p.imgUrl?p.imgUrl:dummy} alt="avatar"></img>,
+                            <Link to={"/profile/"+p.uid} key={"name"+i} className="post-section__story-user link-secondary">{p.name}</Link>
                           ]
                         }
                         return false;

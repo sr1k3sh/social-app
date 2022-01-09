@@ -110,7 +110,7 @@ function AccountDetail() {
     }
  
     return (
-        <div className="rikesh-nav container-xxl">
+        <div className="rikesh-container container-xxl">
         <Navbar isRequired={false}></Navbar>
         <div className="col-xxl-12 account-section">
             <form className="account-section__form" onSubmit={handleSubmit}>

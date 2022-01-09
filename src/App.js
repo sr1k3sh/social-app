@@ -5,6 +5,7 @@ import Register from "./components/Register";
 import Reset from "./components/Reset";
 import Dashboard from "./components/Dashboard";
 import AccountDetail from "./components/AccountDetail";
+import UserProfilePage from "./components/UserProfilePage";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route exact path="/reset" component={Reset} />
           <Route exact path="/dashboard" component={Dashboard} />
           <Route exact path="/account" component={AccountDetail} />
+          <Route exact path="/profile/:id" component={UserProfilePage}></Route>
         </Switch>
       </Router>
     </div>

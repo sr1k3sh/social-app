@@ -1,13 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
 $font-family-base:'Manrope', sans-serif;
 $blue:#FF331F;
+$light-white: #FBFBFF;
 
 :root{
     --bs-body-color:#001242;
 }
 @import '../node_modules/bootstrap/scss/bootstrap.scss';
+@import './components/userprofile.scss';
 .btn-primary{
-    color:#FBFBFF;
+    color:$light-white;
     &:hover{
         color:#FFFFFF;
     }
@@ -19,6 +21,6 @@ $blue:#FF331F;
     }
 }
 .navbar{
-    background: #FBFBFF;
+    background: $light-white;
     z-index: 1;
 }

@@ -1,6 +1,12 @@
-# Getting Started with Create React App
+# Features available
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Markup :    * multiple user login
+            * user can share post
+            * user can share post and photo
+            * user can change profile picture from setting (gear icon)
+            * user can view other user profile page
+            * user can comment on other post
+            * user can like comments 
 
 ## Available Scripts
 

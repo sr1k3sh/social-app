@@ -1,0 +1,17 @@
+.profile-page{
+    display: flex;
+
+    &__header{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 32px;
+    }
+
+    &__display-image{
+        border: 3px solid $blue;
+        border-radius: 50%;
+        object-fit: cover;
+        background: $light-white;
+    }
+}
