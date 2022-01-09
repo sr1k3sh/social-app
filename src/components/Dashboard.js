@@ -6,6 +6,7 @@ import "./Dashboard.scss";
 import { auth, storage, db} from "../services/firebase";
 import uniqid from 'uniqid';
 import dummy from './../images/profile.png';
+import upload from './../images/upload.svg';
 import Navbar from "./Navbar";
 
 function Dashboard() {
@@ -27,7 +28,7 @@ function Dashboard() {
 
   const [imageAsFile, setImageAsFile] = useState('');
 
-  const [sharePost, setSharePost] = useState(true);
+  const [sharePost, setSharePost] = useState(false);
   
   const {refPhoto,refPost} = useRef(null);
 
@@ -295,9 +296,9 @@ function Dashboard() {
       <div className="col-xxl-12 post-section">
         <div className="post-section__wrapper">
           <form className="post-section__form" onSubmit={PostSection}>
-            <div className="post-section__form-element post-section__form-element--row">
-              <button ref={refPost} className="btn btn-outline-secondary btn-post" onClick={onSharePost}>Share Post</button>
-              <button ref={refPhoto} className="btn btn-outline-secondary btn-photo active" onClick={onSharePhoto}>Share Photo</button>
+            <div className="post-section__form-element post-section__form-element--row post-section__form-element--no-border">
+              <button ref={refPost} className="btn btn-outline-secondary btn-post active" onClick={onSharePost}>Share Post</button>
+              <button ref={refPhoto} className="btn btn-outline-secondary btn-photo " onClick={onSharePhoto}>Share Photo</button>
             </div>
             {
               sharePost && <div className="post-section__form-element post-section__form-element--image-upload">
@@ -305,7 +306,7 @@ function Dashboard() {
                   <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>cloud, upload, storage, memory, data</title><path d="M20.57,9.43A8,8,0,0,0,5.26,10,5,5,0,1,0,5,20h5V18H5a3,3,0,0,1,0-6,3.1,3.1,0,0,1,.79.12l1.12.31.14-1.15a6,6,0,0,1,11.74-.82l.15.54.54.16A3.46,3.46,0,0,1,22,14.5,3.5,3.5,0,0,1,18.5,18H16v2h2.5A5.48,5.48,0,0,0,20.57,9.43Z"/><polygon points="16.71 15.29 13 11.59 9.29 15.29 10.71 16.71 12 15.41 12 20 14 20 14 15.41 15.29 16.71 16.71 15.29"/></svg>
                 </label>
                 <input id="post_media" type="file" className="form-control post-section__hidden"  onChange={handleMediaChange}/>
-                <img width={300} height={300} src={localImg?localImg:dummy} alt="local data"></img>
+                <img width={300} height={300} src={localImg?localImg:upload} alt="local data"></img>
               </div>
             }
             

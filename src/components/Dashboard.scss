@@ -97,7 +97,7 @@
     width: 40px;
     height:40px;
     border-radius: 50%;
-    background: var(--bs-primary);
+    background: #FBFBFF;
   }
 
   &__hidden{
@@ -122,6 +122,10 @@
 
     &--row{
       flex-direction: row;
+    }
+
+    &--no-border{
+      border:0;
     }
   }
   
@@ -154,6 +158,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    margin-bottom: 10px;
   }
 
   &__like{
@@ -215,7 +220,7 @@
     align-items: center;
     gap: 8px;
     & img{
-      background: red;
+      background: #FBFBFF;
       border-radius: 50%;
     }
     & span{
