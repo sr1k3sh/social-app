@@ -24,7 +24,6 @@ const auth = app.auth();
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-// console.log(db.collection('users').doc('0fZucWrQWgclUhFo7wPTmjWu6eD2'))
 
 const signInWithGoogle = async () => {
   try {
@@ -37,7 +36,6 @@ const signInWithGoogle = async () => {
         if (docSnapshot.exists) {
           console.log('user already registered')
         } else {
-          // usersRef.set({...}) // create the document
           usersRef.set({
             uid:user.uid,
             name:user.displayName,
@@ -70,12 +68,22 @@ const registerWithEmailAndPassword = async (name, email, password) => {
   try {
     const res = await auth.createUserWithEmailAndPassword(email, password);
     const user = res.user;
-    await database.ref("users").push({
-      uid:user.uid,
-      name:name,
-      authProvider:'local',
-      email:email
-    })
+
+    const usersRef = await db.collection('users').doc(user.uid);
+    usersRef.get()
+      .then((docSnapshot) => {
+        if (docSnapshot.exists) {
+          console.log('user already registered')
+        } else {
+          // usersRef.set({...}) // create the document
+          usersRef.set({
+            uid:user.uid,
+            name:name,
+            authProvider: "local",
+            email:email
+          });
+        }
+    });
   } catch (err) {
     console.error(err);
     alert(err.message);

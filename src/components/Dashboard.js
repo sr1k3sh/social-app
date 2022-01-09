@@ -292,8 +292,7 @@ function Dashboard() {
               </button>
               <ul className="dropdown-menu dropdown-menu-start dropdown-menu-lg-start dropdown-menu-sm-start" aria-labelledby="dropdownMenuButton2">
                 {
-                  getActivity && getActivity.filter(f=>f.userId !== user.uid).map((g,i)=>{
-                    console.log(g);
+                  user && getActivity && getActivity.filter(f=>f.userId !== user.uid).map((g,i)=>{
                     return <li key={i}><Link className="link-secondary" to="/">{g.message}</Link></li>
                   })
                 }
