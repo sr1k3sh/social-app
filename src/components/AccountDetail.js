@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useHistory } from "react-router";
-import { useRef } from "react/cjs/react.development";
+import { useHistory } from "react-router";  
 import { auth , storage ,db} from "../services/firebase";
 import dummy from './../images/profile.png'
 import './AccountDetail.scss';
