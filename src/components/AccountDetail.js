@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
-import { Link } from "react-router-dom";
 import { useRef } from "react/cjs/react.development";
 import { auth , storage ,db} from "../services/firebase";
 import dummy from './../images/profile.png'
 import './AccountDetail.scss';
+import Navbar from "./Navbar";
 
 function AccountDetail() {
     const [user, loading] = useAuthState(auth);
@@ -111,13 +111,7 @@ function AccountDetail() {
  
     return (
         <div className="rikesh-nav container-xxl">
-        <nav className="navbar navbar-light bg-light">
-            <div className="container">
-            <Link className="navbar-brand" to="/dashboard">
-                <img src="./logo192.png" alt="" width="30" height="30"/>
-            </Link>
-            </div>
-        </nav>
+        <Navbar isRequired={false}></Navbar>
         <div className="col-xxl-12 account-section">
             <form className="account-section__form" onSubmit={handleSubmit}>
                 <div className="account-section__image-wrapper">
