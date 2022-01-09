@@ -141,7 +141,8 @@ function Dashboard() {
             likedByCurrent:'',
             imgUrl:imgUrl?imgUrl:'',
             comments:[]
-          })
+          });
+          e.target.reset();
         }
         else{
             const uploadTask = storage.ref(`/images/${imageAsFile.name}`).put(imageAsFile)
@@ -167,12 +168,13 @@ function Dashboard() {
                     imgUrl:imgUrl?imgUrl:'',
                     comments:[],
                     postImageUrl:fireBaseUrl
-                  })
+                  });
+                  e.target.reset();
+                  history.push('/');
                 });
             });
         }
         
-        e.target.reset();
       }
       catch(err){
         console.log(err);
