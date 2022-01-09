@@ -273,8 +273,6 @@ function Dashboard() {
     document.querySelector(".btn-post").classList.remove('active');
   }
 
-  console.log(getActivity)
-
   return (
     <div className="rikesh-nav container-xxl">
       <nav className="navbar navbar-light bg-light">
