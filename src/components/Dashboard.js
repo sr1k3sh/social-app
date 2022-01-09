@@ -326,12 +326,14 @@ function Dashboard() {
                     {
                       getProfileData && getProfileData.map((p,i)=>{
                         if(p.uid === d.userId){
-                          return <img className="post-section__avatar-img" key={i} src={p.imgUrl?p.imgUrl:dummy} alt="avatar"></img>
+                          return [ 
+                            <img className="post-section__avatar-img" key={i} src={p.imgUrl?p.imgUrl:dummy} alt="avatar"></img>,
+                            <Link to="#" className="post-section__story-user link-secondary">{p.name}</Link>
+                          ]
                         }
                         return false;
                       })
                     }
-                    <Link to="#" className="post-section__story-user link-secondary">{d.name}</Link>
                   </div>
                   <div>
                     {
@@ -343,7 +345,7 @@ function Dashboard() {
                   <div className="post-section__actions">
                     <div className="post-section__action-buttons">
                       <div className="post-section__liked-container">
-                        <button className={ user && d.likedByCurrent === user.uid ? "post-section__like active":"post-section__like"} name={d.storyId} onClick={e=>likeChange(e,this)}>
+                        <button className={ user && d.likedByCurrent === user.uid ? "post-section__like active":"post-section__like"} name={d.storyId} onClick={e=>likeChange(e,this)} aria-label="like">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-thumbs-up"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
                         </button>
                         <span>{d.likedArr && d.likedArr.length}</span>
@@ -375,8 +377,8 @@ function Dashboard() {
                         }
                       </ul>
                       <form className="post-section__comment-form" onSubmit={shareComment} name={d.storyId}>
-                        <label className="post-section__comment-label post-section__hidden">submit comment</label>        
-                        <textarea className="post-section__comment-textarea form-control" placeholder="share comment" onChange={onChange}></textarea>
+                        <label htmlFor={"share-comment"+d.storyId}  className="post-section__comment-label post-section__hidden">submit comment</label>        
+                        <textarea id={"share-comment"+d.storyId} className="post-section__comment-textarea form-control" placeholder="share comment" onChange={onChange}></textarea>
                         <button className="btn btn-outline-primary post-section__comment-button" type="submit">comment</button>
                       </form>
                     </div>
