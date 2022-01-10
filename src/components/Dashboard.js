@@ -97,7 +97,7 @@ function Dashboard(props) {
   
       setDidMount(true);
     }
-
+    
     return () => {
       setName({}); // This worked for me
       setPostData([]);
@@ -313,10 +313,10 @@ function Dashboard(props) {
               {   
                 isPostLoader.current ?
                   [
-                    <StorySkeleton></StorySkeleton>,
-                    <StorySkeleton></StorySkeleton>,
-                    <StorySkeleton></StorySkeleton>,
-                    <StorySkeleton></StorySkeleton>
+                    <StorySkeleton key={uniqid()}></StorySkeleton>,
+                    <StorySkeleton key={uniqid()}></StorySkeleton>,
+                    <StorySkeleton key={uniqid()}></StorySkeleton>,
+                    <StorySkeleton key={uniqid()}></StorySkeleton>
                   ]
                 :   
                 postData && postData.map((d,i)=>{

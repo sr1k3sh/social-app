@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { auth, db, logout } from "../services/firebase";
 import logo from './../images/logo.png';
 import { ImageSkeleton, PlainSkeleton } from "./StorySkeleton";
+import uniqid from 'uniqid';
 
 function Navbar(props) {
     const [user, loading] = useAuthState(auth);
@@ -52,8 +53,8 @@ function Navbar(props) {
                                 <div className="rikesh-container__welcome-text">Welcome!! {props.name}</div>
                                 :
                                 [
-                                    <PlainSkeleton width={50}></PlainSkeleton>,
-                                    <PlainSkeleton width={30}></PlainSkeleton>
+                                    <PlainSkeleton width={50} key={uniqid()}></PlainSkeleton>,
+                                    <PlainSkeleton width={30} key={uniqid()}></PlainSkeleton>
                                 ]
 
                             }
